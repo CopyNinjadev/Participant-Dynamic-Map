@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marathon Map with Hash-based Filter</title>
+  <title>Dynamic Marathon Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
@@ -15,7 +15,7 @@
 </head>
 <body>
   <h2>Marathon Map with Dynamic Colored Line</h2>
-
+  
   <div id="map"></div>
 
   <script>
@@ -29,13 +29,19 @@
 
     let participantData = [];
 
+    // Get the Bib No from the URL
+    function getBibFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('bib');
+    }
+
     // Fetch data from the API
     fetch('https://mocki.io/v1/8e7119df-445f-4074-958e-0ffbf7f4dcc8')
       .then(response => response.json())
       .then(data => {
         participantData = data; // Store fetched data
         
-        const bibFilter = getBibFromHash(); // Get the Bib No from the URL hash
+        const bibFilter = getBibFromURL(); // Get the Bib No from the URL
 
         if (bibFilter) {
           const filteredData = participantData.filter(participant => participant.bib_no === bibFilter);
@@ -45,13 +51,6 @@
         }
       })
       .catch(error => console.error('Error fetching participant data:', error));
-
-    // Function to get Bib No from the URL hash
-    function getBibFromHash() {
-      const hash = window.location.hash; // Get the hash part of the URL
-      const params = new URLSearchParams(hash.substring(1)); // Remove the '#' and create URLSearchParams
-      return params.get('bib'); // Get the Bib No parameter from the hash
-    }
 
     // Function to display markers and polylines
     function displayMarkersAndPolylines(data) {
@@ -77,12 +76,12 @@
         });
 
         // Draw polyline connecting all locations and synchronize popups with marker locations
-        animatePolylinesSequentially(polylineCoordinates, markers, locations);
+        animatePolylinesSequentially(polylineCoordinates, markers);
       });
     }
 
     // Function to animate polylines and synchronize marker popups
-    function animatePolylinesSequentially(locations, markers, participantLocations) {
+    function animatePolylinesSequentially(locations, markers) {
       let currentStep = 0;
 
       function animateSegment(index) {
@@ -93,11 +92,7 @@
 
         const isMarkerAtNext = markers.some(marker => marker.getLatLng().lat === loc2[0] && marker.getLatLng().lng === loc2[1]); // Check if there's a marker at the next location
 
-        // Determine the color based on the number of the next location
-        const nextNumber = participantLocations[index + 1]?.number; // Get the next number
-        const color = nextNumber < 20 ? 'red' : 'blue'; // Red if next number < 20, else blue
-
-        const polyline = L.polyline([[loc1[0], loc1[1]], [loc1[0], loc1[1]]], { color: color, weight: 5 }).addTo(map);
+        const polyline = L.polyline([[loc1[0], loc1[1]], [loc1[0], loc1[1]]], { color: 'red', weight: 5 }).addTo(map);
 
         // Use medium speed for marker vs. non-marker points
         const totalSteps = isMarkerAtNext ? 50 : 15; // More steps for markers, fewer for non-markers
