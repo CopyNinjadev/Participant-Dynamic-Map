@@ -14,7 +14,7 @@
   </style>
 </head>
 <body>
-  <h2>Marathon Map with Dynamic Colored Line</h2>
+  <h2>Dynamic Route Course Analysis</h2>
   
   <div id="map"></div>
 
@@ -32,7 +32,7 @@
     // Get the Bib No from the URL
     function getBibFromURL() {
       const params = new URLSearchParams(window.location.search);
-      return params.get('bib');
+      return params.get('bib'); // Get 'bib' from URL query parameters
     }
 
     // Fetch data from the API
